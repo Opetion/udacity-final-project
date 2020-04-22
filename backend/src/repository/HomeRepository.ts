@@ -50,7 +50,7 @@ export class HomeRepository {
         const params = {
             TableName: this.HOME_TABLE,
             Key: {
-                "todoId": id
+                "homeId": id
             }
         };
 
@@ -66,7 +66,7 @@ export class HomeRepository {
         const params = {
             TableName: this.HOME_TABLE,
             Key:{
-                "todoId": todoId
+                "homeId": todoId
             }
         };
 
