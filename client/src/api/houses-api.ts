@@ -1,11 +1,24 @@
 import { apiEndpoint } from '../config'
-import { Todo } from '../types/Todo';
-import { CreateTodoRequest } from '../types/CreateTodoRequest';
+import { Home } from '../types/Home';
+import { CreateHomeRequest } from '../types/CreateHomeRequest';
 import Axios from 'axios'
-import { UpdateTodoRequest } from '../types/UpdateTodoRequest';
+import { UpdateHomeRequest } from '../types/UpdateHomeRequest';
 
-export async function getTodos(idToken: string): Promise<Todo[]> {
-  console.log('Fetching todos')
+export async function getHouse(idHouse: string, idToken: string): Promise<Home> {
+  console.log(`Fetching House ${idHouse}`)
+
+  const response = await Axios.get(`${apiEndpoint}/homes/${idHouse}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
+  console.log('Home:', response.data)
+  return response.data.item
+}
+
+export async function getHouses(idToken: string): Promise<Home[]> {
+  console.log('Fetching Houses')
 
   const response = await Axios.get(`${apiEndpoint}/homes`, {
     headers: {
@@ -13,14 +26,14 @@ export async function getTodos(idToken: string): Promise<Todo[]> {
       'Authorization': `Bearer ${idToken}`
     },
   })
-  console.log('Todos:', response.data)
+  console.log('Homes:', response.data)
   return response.data.items
 }
 
 export async function createTodo(
   idToken: string,
-  newTodo: CreateTodoRequest
-): Promise<Todo> {
+  newTodo: CreateHomeRequest
+): Promise<Home> {
   const response = await Axios.post(`${apiEndpoint}/homes`,  JSON.stringify(newTodo), {
     headers: {
       'Content-Type': 'application/json',
@@ -30,12 +43,12 @@ export async function createTodo(
   return response.data.item
 }
 
-export async function patchTodo(
+export async function patchHome(
   idToken: string,
-  todoId: string,
-  updatedTodo: UpdateTodoRequest
+  homeId: string,
+  updatedHome: UpdateHomeRequest
 ): Promise<void> {
-  await Axios.patch(`${apiEndpoint}/homes/${todoId}`, JSON.stringify(updatedTodo), {
+  await Axios.patch(`${apiEndpoint}/homes/${homeId}`, JSON.stringify(updatedHome), {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`

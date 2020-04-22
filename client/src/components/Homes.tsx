@@ -14,75 +14,57 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
+import { createTodo, deleteTodo, getHouses, patchHome } from '../api/houses-api'
 import Auth from '../auth/Auth'
-import { Todo } from '../types/Todo'
+import { Home } from '../types/Home'
 
-interface TodosProps {
+interface HomesProps {
   auth: Auth
   history: History
 }
 
-interface TodosState {
-  todos: Todo[]
-  newTodoName: string
-  loadingTodos: boolean
+interface HomesState {
+  homes: Home[]
+  newHomeName: string
+  loadingHomes: boolean
 }
 
-export class Todos extends React.PureComponent<TodosProps, TodosState> {
-  state: TodosState = {
-    todos: [],
-    newTodoName: '',
-    loadingTodos: true
+export class Homes extends React.PureComponent<HomesProps, HomesState> {
+  state: HomesState = {
+    homes: [],
+    newHomeName: '',
+    loadingHomes: true
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ newTodoName: event.target.value })
+    this.setState({ newHomeName: event.target.value })
   }
 
-  onEditButtonClick = (todoId: string) => {
-    this.props.history.push(`/todos/${todoId}/edit`)
+  onEditButtonClick = (homeId: string) => {
+    this.props.history.push(`/homes/${homeId}/edit`)
   }
 
-  onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
+  onHomeCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
       const dueDate = this.calculateDueDate()
       const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
-        dueDate
+        name: this.state.newHomeName,
+        description: dueDate
       })
       this.setState({
-        todos: [...this.state.todos, newTodo],
-        newTodoName: ''
+        homes: [...this.state.homes, newTodo],
+        newHomeName: ''
       })
     } catch {
       alert('Todo creation failed')
     }
   }
 
-  onTodoDelete = async (todoId: string) => {
+  onHomeDelete = async (homeId: string) => {
     try {
-      await deleteTodo(this.props.auth.getIdToken(), todoId)
+      await deleteTodo(this.props.auth.getIdToken(), homeId)
       this.setState({
-        todos: this.state.todos.filter(todo => todo.todoId != todoId)
-      })
-    } catch {
-      alert('Todo deletion failed')
-    }
-  }
-
-  onTodoCheck = async (pos: number) => {
-    try {
-      const todo = this.state.todos[pos]
-      await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
-        name: todo.name,
-        dueDate: todo.dueDate,
-        done: !todo.done
-      })
-      this.setState({
-        todos: update(this.state.todos, {
-          [pos]: { done: { $set: !todo.done } }
-        })
+        homes: this.state.homes.filter(home => home.homeId != homeId)
       })
     } catch {
       alert('Todo deletion failed')
@@ -91,10 +73,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
 
   async componentDidMount() {
     try {
-      const todos = await getTodos(this.props.auth.getIdToken())
+      const todos = await getHouses(this.props.auth.getIdToken())
       this.setState({
-        todos,
-        loadingTodos: false
+        homes: todos,
+        loadingHomes: false
       })
     } catch (e) {
       alert(`Failed to fetch todos: ${e.message}`)
@@ -104,16 +86,16 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   render() {
     return (
       <div>
-        <Header as="h1">TODOs</Header>
+        <Header as="h1">Home Finder</Header>
 
-        {this.renderCreateTodoInput()}
+        {this.renderCreateHomeInput()}
 
-        {this.renderTodos()}
+        {this.renderHomes()}
       </div>
     )
   }
 
-  renderCreateTodoInput() {
+  renderCreateHomeInput() {
     return (
       <Grid.Row>
         <Grid.Column width={16}>
@@ -122,12 +104,12 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
               color: 'teal',
               labelPosition: 'left',
               icon: 'add',
-              content: 'New task',
-              onClick: this.onTodoCreate
+              content: 'New Home',
+              onClick: this.onHomeCreate
             }}
             fluid
             actionPosition="left"
-            placeholder="To change the world..."
+            placeholder="A House, a dream..."
             onChange={this.handleNameChange}
           />
         </Grid.Column>
@@ -138,8 +120,8 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     )
   }
 
-  renderTodos() {
-    if (this.state.loadingTodos) {
+  renderHomes() {
+    if (this.state.loadingHomes) {
       return this.renderLoading()
     }
 
@@ -159,26 +141,23 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   renderTodosList() {
     return (
       <Grid padded>
-        {this.state.todos.map((todo, pos) => {
+        {this.state.homes.map((home, pos) => {
           return (
-            <Grid.Row key={todo.todoId}>
+            <Grid.Row key={home.homeId}>
               <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onTodoCheck(pos)}
-                  checked={todo.done}
-                />
+
               </Grid.Column>
               <Grid.Column width={10} verticalAlign="middle">
-                {todo.name}
+                {home.name}
               </Grid.Column>
               <Grid.Column width={3} floated="right">
-                {todo.dueDate}
+                {home.createdAt}
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
                   icon
                   color="blue"
-                  onClick={() => this.onEditButtonClick(todo.todoId)}
+                  onClick={() => this.onEditButtonClick(home.homeId)}
                 >
                   <Icon name="pencil" />
                 </Button>
@@ -187,13 +166,13 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 <Button
                   icon
                   color="red"
-                  onClick={() => this.onTodoDelete(todo.todoId)}
+                  onClick={() => this.onHomeDelete(home.homeId)}
                 >
                   <Icon name="delete" />
                 </Button>
               </Grid.Column>
-              {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped />
+              {home.previewImage && (
+                <Image src={home.previewImage} size="small" wrapped />
               )}
               <Grid.Column width={16}>
                 <Divider />

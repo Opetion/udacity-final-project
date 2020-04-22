@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { Form, Button } from 'semantic-ui-react'
 import Auth from '../auth/Auth'
-import { getUploadUrl, uploadFile } from '../api/todos-api'
+import { getHouse, getHouses, getUploadUrl, uploadFile } from '../api/houses-api'
+import { Home } from '../types/Home'
 
 enum UploadState {
   NoUpload,
@@ -9,27 +10,40 @@ enum UploadState {
   UploadingFile,
 }
 
-interface EditTodoProps {
+interface EditHomeProps {
   match: {
     params: {
-      todoId: string
+      homeId: string
     }
   }
   auth: Auth
 }
 
-interface EditTodoState {
+interface EditHomeState {
+  home?: Home
   file: any
   uploadState: UploadState
 }
 
-export class EditTodo extends React.PureComponent<
-  EditTodoProps,
-  EditTodoState
-> {
-  state: EditTodoState = {
+export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
+
+  state: EditHomeState = {
+    home: undefined,
     file: undefined,
     uploadState: UploadState.NoUpload
+  }
+
+  async componentDidMount() {
+    try {
+      const actualHome = await getHouse(this.props.match.params.homeId, this.props.auth.getIdToken())
+      this.setState({
+        home: actualHome,
+        file: undefined,
+        uploadState: UploadState.NoUpload
+      })
+    } catch (e) {
+      alert(`Failed to fetch home: ${e.message}`)
+    }
   }
 
   handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +65,7 @@ export class EditTodo extends React.PureComponent<
       }
 
       this.setUploadState(UploadState.FetchingPresignedUrl)
-      const uploadUrl = await getUploadUrl(this.props.auth.getIdToken(), this.props.match.params.todoId)
+      const uploadUrl = await getUploadUrl(this.props.auth.getIdToken(), this.props.match.params.homeId)
 
       this.setUploadState(UploadState.UploadingFile)
       await uploadFile(uploadUrl, this.state.file)
@@ -73,7 +87,11 @@ export class EditTodo extends React.PureComponent<
   render() {
     return (
       <div>
+        {this.state.home != undefined &&
+        <h2>this.state.home!.name - this.state.home!.description</h2>
+        }
         <h1>Upload new image</h1>
+
 
         <Form onSubmit={this.handleSubmit}>
           <Form.Field>
