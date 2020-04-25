@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createTodo, deleteTodo, getHouses, patchHome } from '../api/houses-api'
+import { createHome, deleteHome, getHouses, patchHome } from '../api/houses-api'
 import Auth from '../auth/Auth'
 import { Home } from '../types/Home'
 
@@ -47,39 +47,39 @@ export class Homes extends React.PureComponent<HomesProps, HomesState> {
   onHomeCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
       const dueDate = this.calculateDueDate()
-      const newTodo = await createTodo(this.props.auth.getIdToken(), {
+      const newHome = await createHome(this.props.auth.getIdToken(), {
         name: this.state.newHomeName,
         description: dueDate
       })
       this.setState({
-        homes: [...this.state.homes, newTodo],
+        homes: [...this.state.homes, newHome],
         newHomeName: ''
       })
     } catch {
-      alert('Todo creation failed')
+      alert('Home creation failed')
     }
   }
 
   onHomeDelete = async (homeId: string) => {
     try {
-      await deleteTodo(this.props.auth.getIdToken(), homeId)
+      await deleteHome(this.props.auth.getIdToken(), homeId)
       this.setState({
         homes: this.state.homes.filter(home => home.homeId != homeId)
       })
     } catch {
-      alert('Todo deletion failed')
+      alert('Home deletion failed')
     }
   }
 
   async componentDidMount() {
     try {
-      const todos = await getHouses(this.props.auth.getIdToken())
+      const homes = await getHouses(this.props.auth.getIdToken())
       this.setState({
-        homes: todos,
+        homes: homes,
         loadingHomes: false
       })
     } catch (e) {
-      alert(`Failed to fetch todos: ${e.message}`)
+      alert(`Failed to fetch homes: ${e.message}`)
     }
   }
 
@@ -125,20 +125,20 @@ export class Homes extends React.PureComponent<HomesProps, HomesState> {
       return this.renderLoading()
     }
 
-    return this.renderTodosList()
+    return this.renderHomesList()
   }
 
   renderLoading() {
     return (
       <Grid.Row>
         <Loader indeterminate active inline="centered">
-          Loading TODOs
+          Loading Homes
         </Loader>
       </Grid.Row>
     )
   }
 
-  renderTodosList() {
+  renderHomesList() {
     return (
       <Grid padded>
         {this.state.homes.map((home, pos) => {

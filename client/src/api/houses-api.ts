@@ -14,7 +14,7 @@ export async function getHouse(idHouse: string, idToken: string): Promise<Home> 
     },
   })
   console.log('Home:', response.data)
-  return response.data.item
+  return response.data.result
 }
 
 export async function getHouses(idToken: string): Promise<Home[]> {
@@ -30,11 +30,11 @@ export async function getHouses(idToken: string): Promise<Home[]> {
   return response.data.items
 }
 
-export async function createTodo(
+export async function createHome(
   idToken: string,
-  newTodo: CreateHomeRequest
+  newHome: CreateHomeRequest
 ): Promise<Home> {
-  const response = await Axios.post(`${apiEndpoint}/homes`,  JSON.stringify(newTodo), {
+  const response = await Axios.post(`${apiEndpoint}/homes`,  JSON.stringify(newHome), {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
@@ -56,11 +56,11 @@ export async function patchHome(
   })
 }
 
-export async function deleteTodo(
+export async function deleteHome(
   idToken: string,
-  todoId: string
+  homeId: string
 ): Promise<void> {
-  await Axios.delete(`${apiEndpoint}/homes/${todoId}`, {
+  await Axios.delete(`${apiEndpoint}/homes/${homeId}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
@@ -70,9 +70,9 @@ export async function deleteTodo(
 
 export async function getUploadUrl(
   idToken: string,
-  todoId: string
+  homeId: string
 ): Promise<string> {
-  const response = await Axios.post(`${apiEndpoint}/homes/${todoId}/attachment`, '', {
+  const response = await Axios.post(`${apiEndpoint}/homes/${homeId}/preview`, '', {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`

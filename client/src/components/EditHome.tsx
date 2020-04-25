@@ -1,8 +1,10 @@
 import * as React from 'react'
-import { Form, Button } from 'semantic-ui-react'
+import { Form, Button, Image } from 'semantic-ui-react'
 import Auth from '../auth/Auth'
 import { getHouse, getHouses, getUploadUrl, uploadFile } from '../api/houses-api'
 import { Home } from '../types/Home'
+import { Photo } from '../types/Photo'
+import { getPhotos } from '../api/photos-api'
 
 enum UploadState {
   NoUpload,
@@ -21,11 +23,12 @@ interface EditHomeProps {
 
 interface EditHomeState {
   home?: Home
+  photos?: Photo[]
   file: any
   uploadState: UploadState
 }
 
-export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
+export class EditHome extends React.PureComponent<EditHomeProps, EditHomeState> {
 
   state: EditHomeState = {
     home: undefined,
@@ -35,16 +38,39 @@ export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
 
   async componentDidMount() {
     try {
-      const actualHome = await getHouse(this.props.match.params.homeId, this.props.auth.getIdToken())
-      this.setState({
-        home: actualHome,
-        file: undefined,
-        uploadState: UploadState.NoUpload
-      })
+      let home = await this.getHouseDetails()
+      let photos = await this.getHousePhotos()
+
+      console.log('Homes:', home)
+      console.log('Photos:', photos)
     } catch (e) {
       alert(`Failed to fetch home: ${e.message}`)
     }
   }
+
+  async getHouseDetails(): Promise<Home> {
+    const actualHome = await getHouse(this.props.match.params.homeId, this.props.auth.getIdToken())
+    this.setState({
+      home: actualHome,
+      file: this.state.file,
+      uploadState: UploadState.NoUpload
+    })
+    return actualHome
+  }
+
+  async getHousePhotos(): Promise<Photo[]> {
+    const photos = await getPhotos(this.props.match.params.homeId, this.props.auth.getIdToken())
+    console.log(photos)
+    console.log(photos[0])
+    this.setState({
+      home: this.state.home,
+      file: this.state.file,
+      photos: photos,
+      uploadState: UploadState.NoUpload
+    })
+    return photos
+  }
+
 
   handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -56,7 +82,7 @@ export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
   }
 
   handleSubmit = async (event: React.SyntheticEvent) => {
-    event.preventDefault()
+    console.log('Render')
 
     try {
       if (!this.state.file) {
@@ -85,11 +111,17 @@ export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
   }
 
   render() {
+    if (this.state.home == undefined) {
+      return (<h2>"Loading"</h2>)
+    }
     return (
       <div>
-        {this.state.home != undefined &&
-        <h2>this.state.home!.name - this.state.home!.description</h2>
-        }
+
+        <h1> {this.state.home!.name} </h1>
+        <h2> {this.state.home!.description} </h2>
+
+        <h1>Gallery</h1>
+        {this.renderGallery()}
         <h1>Upload new image</h1>
 
 
@@ -108,6 +140,16 @@ export class EditHome extends React.PureComponent<EditHomeProps,EditHomeState> {
         </Form>
       </div>
     )
+  }
+
+  renderGallery() {
+    if (!this.state.photos){
+      return (<div>Loading Gallery</div>)
+    }
+    const photos =  this.state.photos.map((photo: Photo) => {
+      return (<li key={photo.photoId}><Image src={photo.url} size="small" wrapped /></li>)
+    })
+    return (<ul>{photos}</ul>)
   }
 
   renderButton() {
