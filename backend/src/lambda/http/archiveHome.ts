@@ -46,7 +46,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
 
   await repository.delete(homeId);
 
-  logger.info(`Delete TODO [${userId}]  with id: ${homeId}`);
+  logger.info(`Delete Home [${userId}]  with id: ${homeId}`);
   return {
     statusCode: 200,
     body:JSON.stringify({

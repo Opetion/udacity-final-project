@@ -36,7 +36,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     if (!item.previewImage) {
       continue
     }
-    item.previewImage = await storage.getAttachment(item.homeId)
+    item.previewImage = await storage.getAttachment(item.previewImage)
   }
 
   return {

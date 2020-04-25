@@ -17,18 +17,18 @@ export class AttachmentStorage{
   constructor(){
   };
 
-  async getUploadUrl(homeId: string) : Promise<string> {
+  async getUploadUrl(uuid:string) : Promise<string> {
     return STORAGE.getSignedUrl('putObject', {
       Bucket: bucketName,
-      Key: `${homeId}.png`,
+      Key: `${uuid}.png`,
       Expires: EXPIRE_TIME
     })
   };
 
-  async getAttachment(homeId: string) : Promise<string> {
+  async getAttachment(uuid: string) : Promise<string> {
     return STORAGE.getSignedUrl('getObject', {
       Bucket: bucketName,
-      Key: `${homeId}.png`,
+      Key: `${uuid}.png`,
       Expires: EXPIRE_TIME
     })
   }

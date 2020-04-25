@@ -7,7 +7,7 @@ import { createLogger } from '../utils/logger'
 const AWSXRay = require('aws-xray-sdk');
 const XAWS = AWSXRay.captureAWS(AWS);
 
-const logger = createLogger("todo-repository");
+const logger = createLogger("home-repository");
 
 export class HomeRepository {
 
@@ -62,11 +62,11 @@ export class HomeRepository {
         return item as HomeItem;
     }
 
-    async delete(todoId: string) : Promise<void> {
+    async delete(homeId: string) : Promise<void> {
         const params = {
             TableName: this.HOME_TABLE,
             Key:{
-                "homeId": todoId
+                "homeId": homeId
             }
         };
 

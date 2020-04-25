@@ -18,7 +18,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   const newHome: CreateHomeRequest = JSON.parse(event.body);
   const authHeader = event.headers["Authorization"];
   const userId = parseUserIdHeader(authHeader);
-  logger.info(`Create TODO [${userId}]  with ${JSON.stringify(newHome)}`);
+  logger.info(`Create Home [${userId}]  with ${JSON.stringify(newHome)}`);
   const result : HomeItem = await repository.create(newHome, userId);
   return {
     statusCode: 201,

@@ -15,7 +15,7 @@ const logger = createLogger("updateHome");
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const homeId = event.pathParameters.homeId
-  const updatedTodo: UpdateHomeRequest = JSON.parse(event.body)
+  const updatedHome: UpdateHomeRequest = JSON.parse(event.body)
 
   const item : HomeItem = await repository.find(homeId);
   const authHeader = event.headers["Authorization"];
@@ -38,10 +38,10 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
       })
     };
   }
-  item.name = updatedTodo.name
+  item.name = updatedHome.name
 
   const result = await repository.update(item)
-  logger.info(`Updated TODO [${userId}] with ${item}`);
+  logger.info(`Updated Home [${userId}] with ${item}`);
   return {
     statusCode:200,
     body: JSON.stringify({

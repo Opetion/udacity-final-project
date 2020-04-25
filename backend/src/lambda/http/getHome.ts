@@ -10,6 +10,7 @@ import { HomeItem } from '../../models/HomeItem'
 
 const repository: HomeRepository = new HomeRepository()
 const storage: AttachmentStorage = new AttachmentStorage()
+
 const logger = createLogger('getHome')
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
