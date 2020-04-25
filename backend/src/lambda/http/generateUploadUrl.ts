@@ -1,54 +1,64 @@
 import 'source-map-support/register'
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda'
-import * as middy from "middy";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import * as middy from 'middy'
 import { HomeItem } from '../../models/HomeItem'
 import { HomeRepository } from '../../repository/HomeRepository'
 import { createLogger } from '../../utils/logger'
 import { parseUserIdHeader } from '../../auth/utils'
 import { AttachmentStorage } from '../../storage/AttachmentStorage'
 import cors from '@middy/http-cors'
+import { PhotoRepository } from '../../repository/PhotoRepository'
+import * as uuid from 'uuid'
 
-const repository: HomeRepository = new HomeRepository();
-const storage: AttachmentStorage = new AttachmentStorage();
-const logger = createLogger("generateUrlTodo");
+const homeRepository: HomeRepository = new HomeRepository()
+const photoRepository: PhotoRepository = new PhotoRepository()
+
+const storage: AttachmentStorage = new AttachmentStorage()
+const logger = createLogger('generateUrlHome')
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
-  const item : HomeItem = await repository.find(todoId);
-  const authHeader = event.headers["Authorization"];
-  const userId = parseUserIdHeader(authHeader);
+  const homeId = event.pathParameters.homeId
+  logger.info(`Generate request for ${homeId}`)
+  const item: HomeItem = await homeRepository.find(homeId)
+  const authHeader = event.headers['Authorization']
+  const userId = parseUserIdHeader(authHeader)
 
-  if(!item){
-    return  {
+  if (!item) {
+    return {
       statusCode: 404,
       body: JSON.stringify({
-        "message":"item not found"
+        'message': 'item not found'
       })
-    };
+    }
   }
 
-  if(userId !== item.userId) {
-    return  {
+  if (userId !== item.userId) {
+    return {
       statusCode: 403,
       body: JSON.stringify({
-        "message":"No permissions on the item"
+        'message': 'No permissions on the item'
       })
-    };
+    }
   }
 
-  const url = await storage.getUploadUrl(item.homeId)
-  // item.attachmentUrl=url;
-  await repository.update(item)
+  const photoUuid = uuid.v4();
+  const url = await storage.getUploadUrl(photoUuid)
+  if (!item.previewImage) {
+    item.previewImage = photoUuid
+    await homeRepository.update(item)
+  }
 
-  logger.info(`Generated url for ${todoId}`);
+  await photoRepository.create(photoUuid, homeId)
+
+  logger.info(`Generated url for ${homeId}`)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      uploadUrl:url
+      uploadUrl: url
     })
   }
-});
+})
 
-handler.use(cors());
+handler.use(cors())

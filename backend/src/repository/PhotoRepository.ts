@@ -1,15 +1,14 @@
-import * as uuid from 'uuid'
+
 import {PhotoItem} from "../models/PhotoItem";
 import * as AWS from 'aws-sdk'
 import { createLogger } from '../utils/logger'
-import { CreatePhotoRequest } from '../requests/CreatePhotoRequest'
 
 const AWSXRay = require('aws-xray-sdk');
 const XAWS = AWSXRay.captureAWS(AWS);
 
-const logger = createLogger("todo-repository");
+const logger = createLogger("photo-repository");
 
-export class HomeRepository {
+export class PhotoRepository {
 
     constructor(
         private readonly docClient = createDynamoDBClient(),
@@ -43,12 +42,11 @@ export class HomeRepository {
         await this.docClient.delete(params).promise();
     }
 
-    async create(request: CreatePhotoRequest, homeId: string): Promise<PhotoItem> {
+    async create(photoId: string, homeId: string): Promise<PhotoItem> {
         const item: PhotoItem = {
             homeId: homeId,
-            photoId: uuid.v4(),
-            createdAt: new Date().toISOString(),
-            description: request.description
+            photoId: photoId,
+            createdAt: new Date().toISOString()
         };
 
         const params = {
